@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>VM Portal</title>
+    <meta charset="UTF-8" />
+    <link rel="icon" href="data:,">
+    <style>
+    table {
+      font-family: arial, sans-serif;
+      border-collapse: collapse;
+      width: 100%;
+    }
+
+    td, th {
+      border: 1px solid #dddddd;
+      text-align: left;
+      padding: 4px;
+    }
+    /*
+    tr:nth-child(even) {
+      background-color: #dddddd;
+    }
+    */
+    th {
+      background-color: #dddddd;
+    }
+
+    div.menu {
+      font-weight: bolder;
+      /* normal, bold, bolder, lighter, 100~900 */
+      /* font-weight: 900; */
+    }
+    div.domain-ctl {
+      padding-left: 140px;
+    }
+
+    </style>
+  </head>
+  <body>
+    {{/* comment */}}
+    {{- /* comment with white space trimmed */ -}}
+    {{- /* comment with white space and newline trimmed */ -}}
+
+    <div class="menu">
+      <!-- [[ Overview ]] [[ *Domain ]] [[ Image ]] [[ Network ]] [[ System ]] [[ Backup ]] [[ Restore ]] -->
+      Overview | Cluster | *Domain* | Image | Volume | Network | System | Template | Backup | Restore
+    </div>
+
+    <hr/>
+      <div class="domain-ctl">[ List ] [ Detail ] [ Create ] [ Delete ] [ Modify ]</div>
+    <hr/>
+
+    <table>
+      <tr>
+        <th>Name</th>
+        <th>ID</th>
+        <th>UUID</th>
+        <th>State</th>
+        <th>Vcpu</th>
+        <th>Memory KB</th>
+        <!--<th>Max Memory KB</th>-->
+        <th>Disks</th>
+        <th>Interfaces</th>
+        <th>CpuTime</th>
+      </tr>
+      {{ range .Domains }}
+      <tr>
+        <td>{{ .Name }}</td>
+        <td>{{ .ID }}</td>
+        <td>{{ .UUID }}</td>
+        <td>{{ .StateText }}</td>
+        <td>{{ .Vcpu }}</td>
+        <td>{{ .Memory }}</td>
+        <!--<td>{{ .MaxMem }}</td>-->
+        <td>
+          {{ range $index, $element := .Disks }}
+            {{ if $index }},{{end}}
+            {{ $element }}
+          {{ end }}
+        </td>
+        <td></td>
+        <td>{{ .CpuTime }}</td>
+      </tr>
+      {{ end }}
+
+    </table>
+  </body>
+</html>
