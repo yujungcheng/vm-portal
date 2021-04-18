@@ -2,11 +2,13 @@ package module
 
 import (
   "fmt"
+  "time"
   libvirt "libvirt-go"
 )
 
 type AllDomain struct {
   Cluster string
+  CheckedAt time.Time  // check time
   Domains []Domain
 }
 
@@ -15,21 +17,21 @@ type Domain struct {
   ID uint
   UUID string
   State libvirt.DomainState
-  StateText string
+  StateStr string
   MaxMem uint64
+  MaxMemStr string
   Memory uint64
+  MemoryStr string
   Vcpu uint
   CpuTime uint64
   Tags []string  // tags marker
   Disks []string  // disk device name
   Interfaces []string  // interface MAC address & connected Network
   Events []string  // refere to log module, activities history
-  Detail DomainDetail
 }
 
-type DomainDetail struct {
-  Volume []Volume
-}
+
+/* ------------------------------------------------------------------------ */
 
 func GetAllDomain(flag string) AllDomain {
   /* flag value:
@@ -38,6 +40,8 @@ func GetAllDomain(flag string) AllDomain {
   var conn = GetLibvirtConnect()
   defer conn.Close()
 
+  /* Get All domain object
+  ---------------------------------------- */
   fg := GetListAllDomainsFlag(flag)
   //domains, err := conn.ListDomains()  // only active domains
   domains, err := conn.ListAllDomains(fg)
@@ -46,7 +50,10 @@ func GetAllDomain(flag string) AllDomain {
   }
   allDomain := new(AllDomain)
   allDomain.Cluster = "default"  // todo: groupping domans
+  allDomain.CheckedAt = time.Now()
 
+  /* Gat all domain data
+  ---------------------------------------- */
   for _, domain := range domains {
     uuid, err := domain.GetUUIDString()
     if err != nil {
@@ -63,16 +70,18 @@ func GetAllDomain(flag string) AllDomain {
       fmt.Printf("Error: fail to get domain info")
       continue
     }
-    //fmt.Printf("- %s\n", name)
+    fmt.Printf("- %s\n", name)
+
     dom := new(Domain)  // Create domain object
     dom.Name = name
     dom.UUID = uuid
     dom.State = info.State
     dom.MaxMem = info.MaxMem
     dom.Memory = info.Memory
+    dom.MemoryStr = ConvertSizeToString(info.Memory*1024, "MB")
     dom.Vcpu = info.NrVirtCpu
     dom.CpuTime = info.CpuTime
-    dom.StateText = GetDomainStateText(dom.State)  // Set readable status
+    dom.StateStr = GetDomainStateStr(dom.State)  // Set readable status
     if (dom.State == 1 || dom.State == 3) {  // Set domain ID (only poweron VM)
       id, err := domain.GetID()
       if err == nil {
@@ -87,45 +96,62 @@ func GetAllDomain(flag string) AllDomain {
     //devNames = ParserXML(xml, "/domain/devices/disk/target/@dev")
     dom.Disks = ParserXML(xml, "/domain/devices/disk[@device='disk']/target/@dev")
     //for i, diskName := range diskNames {  fmt.Printf("%d, %s\n", i, diskName) }
-
-    //diskPaths =  ParserXML(xml, "/domain/devices/disk/source/@file")
-    //diskPaths =  ParserXML(xml, "/domain/devices/disk[@device='disk']/source/@file")
+    //diskPaths :=  ParserXML(xml, "/domain/devices/disk/source/@file")
+    diskPaths :=  ParserXML(xml, "/domain/devices/disk[@device='disk']/source/@file")
     //for i, diskPath := range diskPaths { fmt.Printf("%d, %s\n", i, diskPath) }
+
+    var disksInfo []string
+    var domDiskPaths map[string]string
+    domDiskPaths = make(map[string]string)
+    for i, disk := range dom.Disks {
+      // Set disk path
+      path := diskPaths[i]
+      domDiskPaths[disk] = path
+      //fmt.Printf("%s %s\n", disk, path)
+
+      blockInfo, err := domain.GetBlockInfo(disk, 0)
+      if err != nil {
+        fmt.Printf("Error: fail to get BlockInfo")
+      } else {
+        capacityStr := ConvertSizeToString(blockInfo.Capacity, "GB")
+        /* Unused
+        allocationStr := ConvertSizeToString(blockInfo.Allocation, "GB")
+        physicalStr := ConvertSizeToString(blockInfo.Physical, "GB")
+        */
+        disksInfo = append(disksInfo, disk+"("+capacityStr+")")
+        //fmt.Printf("%s\n", disksInfo)
+      }
+    }
+    dom.Disks = disksInfo // update disks data
+
+    var interfaces []string
+    macs := ParserXML(xml, "/domain/devices/interface[@type='network']/mac/@address")
+    nets := ParserXML(xml, "/domain/devices/interface[@type='network']/source/@network")
+    models := ParserXML(xml, "/domain/devices/interface[@type='network']/model/@type")
+    for i, mac := range macs {
+      interfaces = append(interfaces, mac+" "+models[i]+" "+nets[i])
+    }
+    dom.Interfaces = interfaces
 
     allDomain.Domains = append(allDomain.Domains, *dom)
     domain.Free()
-    fmt.Printf("- %s\n", name)
+    //fmt.Printf("\n")
   }
   return *allDomain
 }
 
 
-func GetAllDomainDetail(flag string) AllDomain {
-  allDomain := GetAllDomain(flag)
+func GetDomainDetail(uuid string) Domain {
+  domain := new(Domain)
 
   var conn = GetLibvirtConnect()
   defer conn.Close()
 
-  for _, domain := range allDomain.Domains {
-    //fmt.Printf("%T %T", i, domain)
-    dom, err := conn.LookupDomainByUUIDString(domain.UUID)
-    if err != nil {
-      fmt.Print("Error: fail to LookupDomainByUUIDString")
-    }
-    //fmt.Printf("%d, %T, %T\n", i, domain.UUID, dom)
-    for _, disk := range domain.Disks {
-      blockInfo, err := dom.GetBlockInfo(disk, 0)
-      if err != nil {
-        fmt.Printf("Error: fail to get BlockInfo")
-      } else {
-        capacity := blockInfo.Capacity
-        allocation := blockInfo.Allocation
-        physical := blockInfo.Physical
-        fmt.Printf("%d | %d | %d\n", capacity, allocation, physical)
-      }
-    }
-
+  dom, err := conn.LookupDomainByUUIDString(uuid)
+  if err != nil {
+    fmt.Print("Error: fail to LookupDomainByUUIDString")
   }
+  fmt.Printf("%s, %T\n", uuid, dom)
 
   /*
   domain.GetAutostart()
@@ -170,6 +196,5 @@ func GetAllDomainDetail(flag string) AllDomain {
   dom.HasManagedSaveImage()
 
   */
-
-  return allDomain
+  return *domain
 }

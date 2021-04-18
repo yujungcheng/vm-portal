@@ -3,6 +3,7 @@ package module
 import (
   "fmt"
   "strings"
+  "strconv"
   "gopkg.in/xmlpath.v2"
   libvirt "libvirt-go"
 )
@@ -53,27 +54,42 @@ func GetListAllDomainsFlag(flag string) libvirt.ConnectListAllDomainsFlags {
   return fg
 }
 
-func GetDomainStateText(state libvirt.DomainState) string {
-  var stateText string = "No State"
+func GetDomainStateStr(state libvirt.DomainState) string {
+  var stateStr string = "No State"
   switch state {
   case 0:
-    stateText = "No State"
+    stateStr = "No State"
   case 1:
-    stateText = "Running"
+    stateStr = "Running"
   case 2:
-    stateText = "Blocked"
+    stateStr = "Blocked"
   case 3:
-    stateText = "Paused"
+    stateStr = "Paused"
   case 4:
-    stateText = "Shutdown"
+    stateStr = "Shutdown"
   case 5:
-    stateText = "Shutoff"
+    stateStr = "Shutoff"
   case 6:
-    stateText = "Crashed"
+    stateStr = "Crashed"
   case 7:
-    stateText = "Pmsuspended"
+    stateStr = "Pmsuspended"
   default:
-    stateText = "No State"
+    stateStr = "No State"
   }
-  return stateText
+  return stateStr
+}
+
+func ConvertSizeToString(size uint64, unit string) string {
+  var newSize uint64
+  switch unit {
+  case "KB":
+    newSize = size/1024
+  case "MB":
+    newSize = size/1048576
+  case "GB":
+    newSize = size/1073741824
+  default:
+    newSize = size/1024
+  }
+  return strconv.FormatUint(newSize, 10)+unit
 }
