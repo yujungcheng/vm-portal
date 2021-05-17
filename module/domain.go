@@ -46,7 +46,7 @@ func GetAllDomain(flag string) AllDomain {
   //domains, err := conn.ListDomains()  // only active domains
   domains, err := conn.ListAllDomains(fg)
   if err != nil {
-    fmt.Println("Error: fail to get domains.")
+    fmt.Println("Error: fail to get domains")
   }
   allDomain := new(AllDomain)
   allDomain.Cluster = "default"  // todo: groupping domans

@@ -9,13 +9,10 @@ import (
 
 
 func overviewHandler(w http.ResponseWriter, r *http.Request) {
-  // overview page
-
+  overview := mod.GetOverview()
   tplFiles := []string {
     "template/portal.tpl",
     "template/base.tpl",
-    "template/header.tpl",
-    "template/footer.tpl",
     "template/overview.tpl",
   }
   tpl, err := template.ParseFiles(tplFiles...)
@@ -23,7 +20,7 @@ func overviewHandler(w http.ResponseWriter, r *http.Request) {
     fmt.Println(err)
     http.Error(w, "Internal Server Error", 500)
   }
-  err = tpl.Execute(w, nil)
+  err = tpl.Execute(w, overview)
   if err != nil {
     fmt.Println(err)
     http.Error(w, "Internal Server Error", 500)
@@ -31,14 +28,11 @@ func overviewHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func domainListHandler(w http.ResponseWriter, r *http.Request) {
-  // active, inactive, running, paused, shutoff
-  flag := "persistent"
+  flag := "persistent"  // active, inactive, running, paused, shutoff
   domains := mod.GetAllDomain(flag)
   tplFiles := []string {
     "template/portal.tpl",
     "template/base.tpl",
-    "template/header.tpl",
-    "template/footer.tpl",
     "template/domain_list.tpl",
   }
   tpl, err := template.ParseFiles(tplFiles...)

@@ -10,11 +10,18 @@
     </style>
   </head>
   <body>
-    {{ template "header" . }}
+
+    {{ template "menu" . }}
+
     <hr/>
+
+    {{ template "action" . }}
     {{ template "content" . }}
+
     <hr/>
-    {{ template "footer" . }}
+
+    {{/* template "footer" . */}}
+
   </body>
 </html>
 {{ end }}

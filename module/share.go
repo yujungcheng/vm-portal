@@ -79,6 +79,44 @@ func GetDomainStateStr(state libvirt.DomainState) string {
   return stateStr
 }
 
+func GetStoragePoolStateStr(state libvirt.StoragePoolState) string {
+  var stateStr string = "Unknown"
+  switch state {
+  case 0:
+    stateStr = "Inactive"
+  case 1:
+    stateStr = "Building"
+  case 2:
+    stateStr = "Running"
+  case 3:
+    stateStr = "Degraded"
+  case 4:
+    stateStr = "Inaccessible"
+  }
+  return stateStr
+}
+
+func GetStorageVolTypeStr(volType libvirt.StorageVolType) string {
+  var typeStr string = "Unknown"
+  switch volType {
+  case 0:
+    typeStr = "File"
+  case 1:
+    typeStr = "Block"
+  case 2:
+    typeStr = "Dir"
+  case 3:
+    typeStr = "Network"
+  case 4:
+    typeStr = "Network Dir"
+  case 5:
+    typeStr = "Ploop"
+  case 6:
+    typeStr = "Last"  // unclear what this type is
+  }
+  return typeStr
+}
+
 func ConvertSizeToString(size uint64, unit string) string {
   var newSize uint64
   switch unit {
