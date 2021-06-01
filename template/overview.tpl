@@ -21,19 +21,47 @@
     <table>
       <tr>
         <td>
+          Socket Number: {{ .CpuSocketsNum }}
+        </td>
+        <td>
           Core(s) per socket: {{ .CpuCorePerSocket }}
         </td>
         <td>
           Thread(s) per core: {{ .CpuThreadPerCore }}
         </td>
         <td>
-          Memory Size (Used/Total): {{ .MemorySize }}
+          Core Number: {{ .CpuCoreNum }}
         </td>
         <td>
-          StorageSize:
+          CPU Model: {{ .CpuModel }}
         </td>
         <td>
-          Interfaces:
+          CPU MHz: {{ .CpuMHz }}
+        </td>
+        <td>
+          Numa Cell Number: {{ .NumaCellNum }}
+        </td>
+        <td>
+          Memory Size: {{ .MemorySize }}
+        </td>
+
+      </tr>
+    </table>
+    <br/>
+
+    <table>
+      <tr>
+        <td>
+          Storage Pool:
+          {{ range .StoragePools }}
+            {{ . }}
+          {{ end }}
+        </td>
+        <td>
+          Networks:
+          {{ range .Networks }}
+            {{ . }}
+          {{ end }}
         </td>
       </tr>
     </table>
