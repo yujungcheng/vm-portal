@@ -9,7 +9,8 @@
       <a href="template">Template</a> |
       <a href="system">System</a> |
       <a href="backup">Backup</a> |
-      <a href="restore">Restore</a>
+      <a href="restore">Restore</a> |
+      <a href="event">Event</a>
     </div>
 {{ end }}
 
@@ -93,13 +94,16 @@
     <table>
       <tr>
         <td>
-          Status:
+          Status: OK
         </td>
         <td>
-          Version:
+          Version: Develop
         </td>
         <td>
-          Uptime:
+          Uptime: {{ .PortalUptime }}
+        </td>
+        <td>
+          PID: {{ .PortalPID }}
         </td>
       </tr>
     </table>

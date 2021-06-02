@@ -2,10 +2,13 @@ package main
 
 import (
   "fmt"
+  "os"
+  "time"
   "net/http"
   "html/template"
   mod "./module"
 )
+
 
 
 func overviewHandler(w http.ResponseWriter, r *http.Request) {
@@ -50,7 +53,29 @@ func domainListHandler(w http.ResponseWriter, r *http.Request) {
 func domainInfoHandler(w http.ResponseWriter, r *http.Request) {
 }
 
+func imageListHandler(w http.ResponseWriter, r *http.Request) {
+}
+
+func imageInfoHandler(w http.ResponseWriter, r *http.Request) {
+}
+
+func volumeListHandler(w http.ResponseWriter, r *http.Request) {
+}
+
+func volumeInfoHandler(w http.ResponseWriter, r *http.Request) {
+}
+
+func networkListHandler(w http.ResponseWriter, r *http.Request) {
+}
+
+func networkInfoHandler(w http.ResponseWriter, r *http.Request) {
+}
+
+
 func main() {
+  mod.StartTime = time.Now()
+  mod.ProcessID = os.Getpid()
+
   mux := http.NewServeMux()
   mux.HandleFunc("/", overviewHandler)
   mux.HandleFunc("/domain", domainListHandler)

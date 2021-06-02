@@ -2,13 +2,14 @@ package module
 
 import (
   "fmt"
+  "time"
   libvirt "libvirt-go"
 )
 
 type Overview struct {
   PortalStatus string
   PortalVersion string
-  PortalUptime int
+  PortalUptime time.Duration
   PortalPID int
 
   CpuModel string
@@ -35,8 +36,6 @@ type Overview struct {
   ClusterNames []string
   BackupNames []string
 
-  ActionHistory []string
-
   Hostname string
   KernelVersion string
   Distribution string
@@ -49,6 +48,9 @@ func GetOverview() Overview {
   defer conn.Close()
 
   overview := new(Overview)
+  overview.PortalUptime = Uptime(StartTime)
+  fmt.Printf("StartTime: %s", StartTime)
+  overview.PortalPID = ProcessID
 
   /* -------- node info -------- */
   nodeInfo, err := conn.GetNodeInfo()
