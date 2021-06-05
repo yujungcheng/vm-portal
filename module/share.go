@@ -2,11 +2,15 @@ package module
 
 import (
   "fmt"
+  "time"
   "strings"
   "strconv"
   "gopkg.in/xmlpath.v2"
   libvirt "libvirt-go"
 )
+
+var StartTime time.Time
+var ProcessID int
 
 func GetLibvirtConnect() libvirt.Connect {
   conn, err := libvirt.NewConnect("qemu:///system")
@@ -33,6 +37,10 @@ func ParserXML(xml string, xpath string) []string {
     */
   }
   return result
+}
+
+func Uptime(startTime time.Time) time.Duration {
+  return time.Since(startTime)
 }
 
 func GetListAllDomainsFlag(flag string) libvirt.ConnectListAllDomainsFlags {

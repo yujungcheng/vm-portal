@@ -9,9 +9,8 @@ import (
   mod "./module"
 )
 
-
-
 func overviewHandler(w http.ResponseWriter, r *http.Request) {
+  fmt.Printf("Handler - overview")
   overview := mod.GetOverview()
   tplFiles := []string {
     "template/portal.tpl",
@@ -31,6 +30,7 @@ func overviewHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func domainListHandler(w http.ResponseWriter, r *http.Request) {
+  fmt.Printf("Handler - domain list")
   flag := "persistent"  // active, inactive, running, paused, shutoff
   domains := mod.GetAllDomain(flag)
   tplFiles := []string {

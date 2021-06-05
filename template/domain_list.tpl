@@ -68,3 +68,8 @@
 
     </table>
 {{ end }}
+
+
+{{ define "footer" }}
+
+{{ end }}

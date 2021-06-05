@@ -20,7 +20,7 @@
 
     <hr/>
 
-    {{/* template "footer" . */}}
+    {{ template "footer" . }}
 
   </body>
 </html>

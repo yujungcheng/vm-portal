@@ -22,48 +22,30 @@
     <table>
       <tr>
         <td>
-          Socket Number: {{ .CpuSocketsNum }}
+          <b>Socket Number:</b> {{ .CpuSocketsNum }}
         </td>
         <td>
-          Core(s) per socket: {{ .CpuCorePerSocket }}
+          <b>Core(s) per socket:</b> {{ .CpuCorePerSocket }}
         </td>
         <td>
-          Thread(s) per core: {{ .CpuThreadPerCore }}
+          <b>Thread(s) per core:</b> {{ .CpuThreadPerCore }}
         </td>
         <td>
-          Core Number: {{ .CpuCoreNum }}
+          <b>Core Number:</b> {{ .CpuCoreNum }}
         </td>
         <td>
-          CPU Model: {{ .CpuModel }}
+          <b>CPU Model:</b> {{ .CpuModel }}
         </td>
         <td>
-          CPU MHz: {{ .CpuMHz }}
+          <b>CPU MHz:</b> {{ .CpuMHz }}
         </td>
         <td>
-          Numa Cell Number: {{ .NumaCellNum }}
+          <b>Numa Cell Number:</b> {{ .NumaCellNum }}
         </td>
         <td>
-          Memory Size: {{ .MemorySize }}
+          <b>Memory Size:</b> {{ .MemorySize }}
         </td>
 
-      </tr>
-    </table>
-    <br/>
-
-    <table>
-      <tr>
-        <td>
-          Storage Pool:
-          {{ range .StoragePools }}
-            {{ . }}
-          {{ end }}
-        </td>
-        <td>
-          Networks:
-          {{ range .Networks }}
-            {{ . }}
-          {{ end }}
-        </td>
       </tr>
     </table>
     <br/>
@@ -72,21 +54,36 @@
     <table>
       <thead>
         <tr>
-          <td class="" rowspan="3">
-            Domains
-          </td>
-          <td class="">ISO Images</td>
-          <td class="">Volumes</td>
+          <th>Domains</th>
+          <th>Storage Pools</th>
+          <th>Networks</th>
         </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="">
+            {{ range .DomainNames }}
+              {{ . }}<br/>
+            {{ end }}
+          </td>
+          <td class="">
+            {{ range .StoragePools }}
+              {{ . }}</br>
+            {{ end }}
+          </td>
+          <td class="">
+            {{ range .Networks }}
+              {{ . }}<br/>
+            {{ end }}
+          </td>
+        </tr>
+        <!--
         <tr>
           <td class="">Clusters</td>
           <td class="">Templates</td>
         </tr>
-        <tr>
-          <td class="">Networks</td>
-          <td class="">Backups</td>
-        </tr>
-      </thead>
+        -->
+      </tbody>
     </table>
     <br/>
 
@@ -112,20 +109,12 @@
 
 {{ define "footer" }}
     <!-- System Version -->
-    <table>
-      <tr>
-        <td>
-          Hostname
-        </td>
-        <td>
-          Kernel Version
-        </td>
-        <td>
-          OS Distribution
-        </td>
-        <td>
-          Libvirt Version
-        </td>
-      </tr>
-    </table>
+    <b>Hostname:</b> {{ .Hostname }}
+    &nbsp;&nbsp;&nbsp;&nbsp;
+    <b>Libvirt Version:</b> {{ .LibvirtVersion }}
+    &nbsp;&nbsp;&nbsp;&nbsp;
+    <b>Kernel Version:</b>
+    &nbsp;&nbsp;&nbsp;&nbsp;
+    <b>OS Distribution:</b>
+
 {{ end }}
