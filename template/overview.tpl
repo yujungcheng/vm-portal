@@ -91,16 +91,16 @@
     <table>
       <tr>
         <td>
-          Status: OK
+          <b>Status:</b> OK
         </td>
         <td>
-          Version: Develop
+          <b>Version:</b> Developing
         </td>
         <td>
-          Uptime: {{ .PortalUptime }}
+          <b>Uptime:</b> {{ .PortalUptime }}
         </td>
         <td>
-          PID: {{ .PortalPID }}
+          <b>PID:</b> {{ .PortalPID }}
         </td>
       </tr>
     </table>

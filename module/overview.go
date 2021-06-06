@@ -48,7 +48,6 @@ func GetOverview() Overview {
   overview := new(Overview)
 
   overview.PortalUptime = Uptime(StartTime)
-  //fmt.Printf("StartTime: %s", StartTime)
   overview.PortalPID = ProcessID
 
   hostname, err := conn.GetHostname()
@@ -66,11 +65,9 @@ func GetOverview() Overview {
     major := libvirtVersion/1000000
     minor := (libvirtVersion-(major*1000000))/1000
     release := (libvirtVersion-(major*1000000)-(minor*1009))
-    //fmt.Printf("\n %d %d %d\n", major, minor, release)
     overview.LibvirtVersion = fmt.Sprintf("%d.%d.%d", major, minor, release)
     //overview.LibvirtVersion = strconv.FormatUint(uint64(libvirtVersion), 10)
   }
-
 
   /* -------- node info -------- */
   nodeInfo, err := conn.GetNodeInfo()
@@ -98,8 +95,15 @@ func GetOverview() Overview {
         fmt.Printf("Error: fail to get domain name")
         continue
       }
-      fmt.Println("- " + name)
-      overview.DomainNames = append(overview.DomainNames, name)
+      state, reason, err := domain.GetState()
+      if err != nil {
+        fmt.Printf("Error: fail to get domain state")
+        continue
+      }
+      _ = reason
+      stateStr := GetDomainStateStr(state)
+      fmt.Println("- " + name + " " + stateStr)
+      overview.DomainNames = append(overview.DomainNames, name+" ("+stateStr+")")
     }
   }
 
@@ -127,6 +131,21 @@ func GetOverview() Overview {
                                              storagePoolAllocation,
                                              storagePoolAvailable)
 
+      storageNumOfVolumes, err := storagePool.NumOfStorageVolumes()
+      fmt.Printf("number of volumes: %d\n", storageNumOfVolumes)
+      pool_info := storagePoolName+" ("+storagePoolAllocation+"/"+storagePoolCapacity+")"
+      overview.StoragePools = append(overview.StoragePools, pool_info)
+
+      storagePoolXMLDesc, err := storagePool.GetXMLDesc(0)
+      if err != nil {
+        fmt.Printf("Error: fail to get storage pool XML Description")
+      } else {
+        //fmt.Printf("%s\n", storagePoolXMLDesc)
+        storagePoolPath := ParserXML(storagePoolXMLDesc, "/pool/target/path")
+        fmt.Printf("- %s\n", storagePoolPath)
+      }
+
+      /*
       storageVolumes, err := storagePool.ListAllStorageVolumes(0)
       if err != nil {
         fmt.Printf("Error: fail to get storage pool volumes")
@@ -154,11 +173,7 @@ func GetOverview() Overview {
                                                  storageVolumePath)
         }
       }
-
-      storageNumOfVolumes, err := storagePool.NumOfStorageVolumes()
-      fmt.Printf("number of volumes: %s\n", storageNumOfVolumes)
-      pool_info := storagePoolName+"("+storagePoolAllocation+"/"+storagePoolCapacity+")"
-      overview.StoragePools = append(overview.StoragePools, pool_info)
+      */
     }
   }
 
@@ -173,13 +188,44 @@ func GetOverview() Overview {
       if err != nil {
         fmt.Printf("Error: fail to get network name")
       }
+      networkUUID, err := network.GetUUIDString()
+      if err != nil {
+        fmt.Printf("Error: fail to get network UUID")
+      }
       bridgeName, err := network.GetBridgeName()
       if err != nil {
-        fmt.Printf("Error: fail to get bridge name")
+        fmt.Printf("Error: fail to get network bridge name")
       }
-      fmt.Printf("%s - %s\n", networkName, bridgeName)
+      var networkMAC []string
+      networkXMLDesc, err := network.GetXMLDesc(0)
+      if err != nil {
+        fmt.Printf("Error: fail to get network XML Description")
+      } else {
+        networkMAC = ParserXML(networkXMLDesc, "/network/mac/@address")
+        networkIP := ParserXML(networkXMLDesc, "/network/ip/@address")
+        networkIPNetMask := ParserXML(networkXMLDesc, "/network/ip/@netmask")
+        networkDHCPStart := ParserXML(networkXMLDesc, "/network/ip/dhcp/range/@start")
+        networkDHCPEnd := ParserXML(networkXMLDesc, "/network/ip/dhcp/range/@end")
+        fmt.Printf("- %s - %s - %s - %s - %s\n", networkMAC, networkIP,
+          networkIPNetMask, networkDHCPStart, networkDHCPEnd)
+      }
+      /*
+      networkDHCPLeases, err := network.GetDHCPLeases()
+      if err != nil {
+        fmt.Printf("Error: fail to get network DHCP leases")
+      }
+      fmt.Printf("%s\n", networkDHCPLeases)
+      */
 
-      network_info := networkName+"("+bridgeName+")"
+      /* Function 'virNetworkListAllPorts' not available in the libvirt library
+       used during Go build'))
+      networkAllPorts, err := network.ListAllPorts(0)
+      if err != nil {
+        fmt.Printf("Error: fail to get network ports", err)
+      }*/
+
+      fmt.Printf("%s - %s - %s\n", networkName, networkUUID, bridgeName)
+      network_info := networkName+" ("+bridgeName+" * "+networkMAC[0]+")"
       overview.Networks = append(overview.Networks, network_info)
     }
   }
