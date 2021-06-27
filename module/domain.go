@@ -7,7 +7,6 @@ import (
 )
 
 type AllDomain struct {
-  Cluster string
   CheckedAt time.Time  // check time
   Domains []Domain
 }
@@ -49,7 +48,6 @@ func GetAllDomain(flag string) AllDomain {
     fmt.Println("Error: fail to get domains")
   }
   allDomain := new(AllDomain)
-  allDomain.Cluster = "default"  // todo: groupping domans
   allDomain.CheckedAt = time.Now()
 
   /* Gat all domain data

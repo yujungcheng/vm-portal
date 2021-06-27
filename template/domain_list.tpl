@@ -71,5 +71,5 @@
 
 
 {{ define "footer" }}
-
+<b>Check Time:</b> {{ .CheckedAt }}
 {{ end }}

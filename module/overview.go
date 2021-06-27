@@ -3,6 +3,8 @@ package module
 import (
   "fmt"
   "time"
+  "strconv"
+  "strings"
   libvirt "libvirt-go"
 )
 
@@ -21,16 +23,11 @@ type Overview struct {
   MemorySize uint64
   NumaCellNum uint32
 
+  DomainNames []string
   StoragePools []string
   Networks []string
-  DomainNames []string
 
-  ImageNames []string
   TemplateNames []string
-
-  CpuCoreUsed uint
-  MemoryUsed uint
-  StorageUsed []string
   ClusterNames []string
   BackupNames []string
 
@@ -61,7 +58,6 @@ func GetOverview() Overview {
   if err != nil {
     fmt.Printf("Err: fail to get libvirt version")
   } else {
-    libvirtVersion = 4001020
     major := libvirtVersion/1000000
     minor := (libvirtVersion-(major*1000000))/1000
     release := (libvirtVersion-(major*1000000)-(minor*1009))
@@ -121,29 +117,57 @@ func GetOverview() Overview {
       if err != nil {
         fmt.Printf("Error: fail to get storage pool info")
       }
+      storagePoolIsActive, err := storagePool.IsActive()
+      if err != nil {
+        fmt.Printf("Error: fail to get storage pool active state")
+        storagePoolIsActive = false
+      }
+      var storageNumOfVolumes int
+      if storagePoolIsActive == true {
+        storageNumOfVolumes, err = storagePool.NumOfStorageVolumes()
+        if err != nil {
+          fmt.Printf("Error: fail to get storage pool volume count")
+        }
+      }
+
       storagePoolState := GetStoragePoolStateStr(storagePoolInfo.State)
       storagePoolCapacity := ConvertSizeToString(storagePoolInfo.Capacity, "GB")
       storagePoolAllocation := ConvertSizeToString(storagePoolInfo.Allocation, "GB")
       storagePoolAvailable := ConvertSizeToString(storagePoolInfo.Available, "GB")
-      fmt.Printf("%s - %s - %s - %s - %s\n", storagePoolName,
-                                             storagePoolState,
-                                             storagePoolCapacity,
-                                             storagePoolAllocation,
-                                             storagePoolAvailable)
 
-      storageNumOfVolumes, err := storagePool.NumOfStorageVolumes()
-      fmt.Printf("number of volumes: %d\n", storageNumOfVolumes)
-      pool_info := storagePoolName+" ("+storagePoolAllocation+"/"+storagePoolCapacity+")"
-      overview.StoragePools = append(overview.StoragePools, pool_info)
-
+      var storagePoolPath string
       storagePoolXMLDesc, err := storagePool.GetXMLDesc(0)
       if err != nil {
         fmt.Printf("Error: fail to get storage pool XML Description")
       } else {
-        //fmt.Printf("%s\n", storagePoolXMLDesc)
-        storagePoolPath := ParserXML(storagePoolXMLDesc, "/pool/target/path")
-        fmt.Printf("- %s\n", storagePoolPath)
+        path := ParserXML(storagePoolXMLDesc, "/pool/target/path")
+        storagePoolPath = path[0]
       }
+
+      fmt.Printf("%s - %s - %s - %s - %s - %d volumes - %s\n",
+        storagePoolName,
+        storagePoolState,
+        storagePoolCapacity,
+        storagePoolAllocation,
+        storagePoolAvailable,
+        storageNumOfVolumes,
+        storagePoolPath)
+/*
+      pool_info := storagePoolName+" ("+
+        storagePoolAllocation+"/"+
+        storagePoolCapacity+") "+
+        storagePoolPath+" Active="+
+        strconv.FormatBool(storagePoolIsActive)+" #"+
+        strconv.Itoa(storageNumOfVolumes)
+*/
+      pool_info_slice := []string{
+        storagePoolName,
+        "("+storagePoolAllocation+"/"+storagePoolCapacity+")",
+        storagePoolPath,
+        "Active="+strconv.FormatBool(storagePoolIsActive),
+        "#"+strconv.Itoa(storageNumOfVolumes)}
+      pool_info := strings.Join(pool_info_slice, " ")
+      overview.StoragePools = append(overview.StoragePools, pool_info)
 
       /*
       storageVolumes, err := storagePool.ListAllStorageVolumes(0)
@@ -225,7 +249,7 @@ func GetOverview() Overview {
       }*/
 
       fmt.Printf("%s - %s - %s\n", networkName, networkUUID, bridgeName)
-      network_info := networkName+" ("+bridgeName+" * "+networkMAC[0]+")"
+      network_info := networkName+" ("+bridgeName+" ... "+networkMAC[0]+")"
       overview.Networks = append(overview.Networks, network_info)
     }
   }
