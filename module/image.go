@@ -6,10 +6,10 @@ import (
 )
 
 type Image struct {
-  Path string
-  Size uint64
-  OS string
-  Version string
+	Path    string
+	Size    uint64
+	OS      string
+	Version string
 }
 
 func GetImage() {
